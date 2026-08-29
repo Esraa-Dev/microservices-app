@@ -22,10 +22,12 @@
     "@types/ejs": "^3.1.5",
     "@types/express": "^5.0.0",
     "@types/express-http-proxy": "^1.6.7",
+    "@types/ioredis": "^4.28.10",
     "@types/jest": "~30.0.0",
     "@types/morgan": "^1.9.10",
     "@types/node": "^22.20.1",
     "@types/nodemailer": "^8.0.1",
+    "@types/swagger-ui-express": "^4.1.8",
     "eslint": "^9.8.0",
     "eslint-config-prettier": "^10.0.0",
     "jest": "~30.3.0",
@@ -61,8 +63,10 @@
     "express": "^5.1.0",
     "express-http-proxy": "^2.1.2",
     "express-rate-limit": "^8.6.2",
+    "ioredis": "^6.0.0",
     "morgan": "^1.11.0",
     "nodemailer": "^9.0.5",
+    "swagger-autogen": "^2.23.7",
     "swagger-ui-express": "^5.0.1"
   }
 }

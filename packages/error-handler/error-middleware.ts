@@ -1,20 +1,26 @@
-import { Request, Response } from "express";
-import { AppError } from "./errors";
+import { NextFunction, Request, Response } from 'express';
+import { AppError } from './errors';
 
 export const errorMiddleware = (
-  err:Error,
+  err: Error,
   req: Request,
   res: Response,
+  next: NextFunction,
 ) => {
   if (err instanceof AppError) {
-    return res.status(err.statusCode).json({
-      status: "error",
+    return res.status(
+      (err as AppError).statusCode
+    ).json({
+      status: 'error',
       message: err.message,
-      ...(err.details && { details: err.details }),
+      ...(err instanceof AppError && err.details
+        ? { details: err.details }
+        : {}),
     });
-  } 
+  }
+
   return res.status(500).json({
-    status: "error",
-    message: "Something went wrong, please try again later.",
+    status: 'error',
+    message: 'Something went wrong, please try again later.',
   });
 };

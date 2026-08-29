@@ -2,7 +2,8 @@
   "compilerOptions": {
     "paths": {
       "@ecommerce/error-handler": ["./packages/error-handler/index.ts"],
-      "@ecommerce/prisma": ["./packages/libs/prisma/index.ts"]
+      "@ecommerce/prisma": ["./packages/libs/prisma/index.ts"],
+      "@ecommerce/redis": ["./packages/libs/redis/index.ts"]
     },
     "composite": true,
     "declarationMap": true,

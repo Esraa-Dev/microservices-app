@@ -21,6 +21,10 @@ module.exports = {
         __dirname,
         '../../packages/libs/prisma/index.ts'
       ),
+       '@ecommerce/redis': join(
+        __dirname,
+        '../../packages/libs/redis/index.ts',
+      ),
     },
   },
 
