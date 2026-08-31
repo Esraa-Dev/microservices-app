@@ -5,9 +5,10 @@ import {
   sendOtp,
   trackOtpRequests,
   validateRegistrationData,
+  verifyOtp,
 } from '../utils/auth.helper';
 import { ValidationError } from '@ecommerce/error-handler';
-
+import bcrypt from 'bcrypt';
 export const register = async (
   req: Request,
   res: Response,
@@ -34,3 +35,33 @@ export const register = async (
     return next(error);
   }
 };
+
+export const verifyUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const { name, email, password, otp } = req.body;
+    if (!email || !name || !password || !otp) {
+      return next(new ValidationError('All fields are required'));
+    }
+    const existingUser = await prisma.user.findUnique({ where: { email } });
+    if (existingUser) {
+      return next(new ValidationError('user already exists with this email!'));
+    }
+    await verifyOtp(email, otp, next);
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const user = await prisma.user.create({
+      data: { name, email, password: hashedPassword },
+    });
+    res.status(201).json({
+      success: true,
+      message: 'User registered successfully!',
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+
