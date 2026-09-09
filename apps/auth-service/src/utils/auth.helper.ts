@@ -1,9 +1,9 @@
 import { ValidationError } from '@ecommerce/error-handler';
-
 import crypto from 'crypto';
 import { sendEmail } from './sendMail';
 import redis from '@ecommerce/redis';
-import { NextFunction } from 'express';
+import { Request, Response, NextFunction } from 'express';
+import prisma from '@ecommerce/prisma';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -120,5 +120,39 @@ export const verifyOtp = async (
       ),
     );
   }
-  await redis.del(storedOtpKey,failedAttemptsKey);
+  await redis.del(storedOtpKey, failedAttemptsKey);
+};
+
+export const handleForgotPassword = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+  userType: 'user' | 'seller',
+) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      throw new ValidationError('Email is required!');
+    }
+
+    const user =
+      userType === 'user' &&
+      (await prisma.user.findUnique({ where: { email } }));
+
+    if (!user) {
+      throw new ValidationError(`${userType} not found!`);
+    }
+
+    await checkOtpRestrictions(email);
+    await trackOtpRequests(email);
+    await sendOtp(user.name, email, 'forgot-user-mail');
+
+    return res.status(200).json({
+      success: true,
+      message: 'OTP sent to email please verify your account',
+    });
+  } catch (error) {
+    return next(error);
+  }
 };
