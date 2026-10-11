@@ -1,0 +1,17 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "module": "Node16",
+    "moduleResolution": "Node16",
+    "lib": ["DOM", "DOM.Iterable", "ESNext"],
+    "outDir": "../../dist/packages/components",
+    "rootDir": ".",
+    "composite": true,
+    "declaration": true,
+    "skipLibCheck": true,
+    "types": ["node"],
+    "jsx": "react-jsx"
+  },
+  "include": ["**/*.ts", "**/*.tsx", "**/*.d.ts"],
+  "exclude": ["node_modules", "dist"]
+}

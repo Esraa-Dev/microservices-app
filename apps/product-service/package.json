@@ -1,0 +1,40 @@
+{
+  "name": "@ecommerce/product-service",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "nx serve @ecommerce/product-service"
+  },
+  "nx": {
+    "targets": {
+      "serve": {
+        "continuous": true,
+        "executor": "@nx/js:node",
+        "defaultConfiguration": "development",
+        "dependsOn": [
+          "build"
+        ],
+        "options": {
+          "buildTarget": "@ecommerce/product-service:build"
+        },
+        "configurations": {
+          "development": {
+            "buildTarget": "@ecommerce/product-service:build:development"
+          },
+          "production": {
+            "buildTarget": "@ecommerce/product-service:build:production"
+          }
+        }
+      },
+      "test": {
+        "options": {
+          "passWithNoTests": true
+        }
+      }
+    }
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "@ecommerce/middleware": "*"
+  }
+}

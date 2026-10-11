@@ -11,7 +11,7 @@ module.exports = {
   },
 
   resolve: {
-    extensions: ['.ts', '.js'],
+    extensions: ['.tsx', '.ts', '.jsx', '.js'],
     alias: {
       '@ecommerce/error-handler': join(
         __dirname,
@@ -21,10 +21,15 @@ module.exports = {
         __dirname,
         '../../packages/libs/prisma/index.ts'
       ),
-       '@ecommerce/redis': join(
+      '@ecommerce/redis': join(
         __dirname,
-        '../../packages/libs/redis/index.ts',
+        '../../packages/libs/redis/index.ts'
       ),
+      '@ecommerce/middleware': join(
+        __dirname,
+        '../../packages/middleware/index.ts'
+      ),
+      '@ecommerce/components': join(__dirname, '../../packages/components'),
     },
   },
 
