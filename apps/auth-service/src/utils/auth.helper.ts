@@ -59,7 +59,7 @@ export const trackOtpRequests = async (email: string) => {
       'Too many OTP requests. Please wait 1 hour before requesting again.',
     );
   }
-
+  
   await redis.set(otpRequestKey, (otpRequestCount + 1).toString(), 'EX', 3600);
 };
 
@@ -114,12 +114,14 @@ export const verifyOtp = async (
       'EX',
       300,
     );
+    
     return next(
       new ValidationError(
         `Incorrect OTP. You have ${2 - failedAttempts} attempts left.`,
       ),
     );
   }
+  
   await redis.del(storedOtpKey, failedAttemptsKey);
 };
 
@@ -137,8 +139,7 @@ export const handleForgotPassword = async (
     }
 
     const user =
-      userType === 'user' &&
-      (await prisma.user.findUnique({ where: { email } }));
+      userType === 'user' ? await prisma.user.findUnique({ where: { email } }): await prisma.seller.findUnique({ where: { email } });
 
     if (!user) {
       throw new ValidationError(`${userType} not found!`);
@@ -146,7 +147,7 @@ export const handleForgotPassword = async (
 
     await checkOtpRestrictions(email);
     await trackOtpRequests(email);
-    await sendOtp(user.name, email, 'forgot-user-mail');
+    await sendOtp(user.name, email,userType === 'user' ? 'user-forgot-password-mail' : 'seller-forgot-password-mail');
 
     return res.status(200).json({
       success: true,

@@ -8,6 +8,30 @@
     },
     {
       "path": "./apps/auth-service"
+    },
+    {
+      "path": "./apps/user-ui"
+    },
+    {
+      "path": "./apps/seller-ui"
+    },
+    {
+      "path": "./apps/api-gateway"
+    },
+    {
+      "path": "./apps/product-service"
+    },
+    {
+      "path": "./packages/middleware"
+    },
+    {
+      "path": "./packages/error-handler"
+    },
+    {
+      "path": "./packages/libs/prisma"
+    },
+    {
+      "path": "./packages/components"
     }
   ]
 }

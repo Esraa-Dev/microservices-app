@@ -1,0 +1,19 @@
+
+{
+  "name": "components",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/components",
+  "projectType": "library",
+  "tags": ["type:lib", "scope:shared"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/packages/components",
+        "main": "packages/components/index.ts",
+        "tsConfig": "packages/components/tsconfig.json"
+      }
+    }
+  }
+}

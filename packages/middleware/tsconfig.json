@@ -1,0 +1,25 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "module": "Node16",
+    "moduleResolution": "Node16",
+    "outDir": "../../dist/packages/middleware",
+    "rootDir": ".",
+    "composite": true,
+    "declaration": true,
+    "skipLibCheck": true,
+    "types": ["node", "express"]
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.d.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ],
+  "references": [
+    { "path": "../error-handler" },
+    { "path": "../libs/prisma" }
+  ]
+}

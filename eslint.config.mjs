@@ -5,7 +5,13 @@ export default [
   ...nx.configs['flat/typescript'],
   ...nx.configs['flat/javascript'],
   {
-    ignores: ['**/dist', '**/out-tsc'],
+    ignores: [
+      '**/dist/**',
+      '**/out-tsc/**',
+      '**/.next/**',
+      '**/node_modules/**',
+      '**/coverage/**',
+    ],
   },
   {
     files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'],
@@ -13,8 +19,8 @@ export default [
       '@nx/enforce-module-boundaries': [
         'error',
         {
-          enforceBuildableLibDependency: true,
-          allow: ['^.*/eslint(\\.base)?\\.config\\.[cm]?[jt]s$'],
+          enforceBuildableLibDependency: false,
+          allow: ['^.*/eslint(\\.base)?\\.config\\.[cm]?[jt]s$', '@/**'],
           depConstraints: [
             {
               sourceTag: '*',

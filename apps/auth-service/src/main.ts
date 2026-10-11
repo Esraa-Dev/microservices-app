@@ -1,6 +1,7 @@
 import express from 'express';
 import cookieParser from 'cookie-parser';
 import swaggerUi from 'swagger-ui-express';
+import cors from 'cors';
 
 import { errorMiddleware } from '@ecommerce/error-handler';
 import authRouter from './routes/auth.router';
@@ -8,6 +9,17 @@ import authRouter from './routes/auth.router';
 const app = express();
 
 const swaggerDocument = require('./swagger-output.json');
+
+app.use(
+  cors({
+    origin: [
+      'http://localhost:3000',
+      'http://localhost:3001',
+      'http://localhost:6001',
+    ],
+    credentials: true,
+  }),
+);
 
 app.use(express.json());
 app.use(cookieParser());

@@ -2,6 +2,9 @@
   "extends": "../../tsconfig.base.json",
   "files": [],
   "include": [],
+  "compilerOptions": {
+    "ignoreDeprecations": "6.0"
+  },
   "references": [
     {
       "path": "./tsconfig.app.json"
