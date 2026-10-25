@@ -32,6 +32,12 @@
     },
     {
       "path": "./packages/components"
+    },
+    {
+      "path": "./apps/kafka-service-e2e"
+    },
+    {
+      "path": "./apps/kafka-service"
     }
   ]
 }

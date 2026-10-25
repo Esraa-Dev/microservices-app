@@ -6,7 +6,8 @@
       "@ecommerce/redis": ["./packages/libs/redis/index.ts"],
       "@ecommerce/middleware": ["./packages/middleware/index.ts"],
       "@ecommerce/components/*": ["./packages/components/*"],
-      "@ecommerce/components": ["./packages/components"]
+      "@ecommerce/components": ["./packages/components"],
+      "@ecommerce/kafka": ["./packages/utils/kafka/index.ts"]
     },
     "composite": true,
     "declarationMap": true,
@@ -27,6 +28,6 @@
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
-    "declaration": true,
+    "declaration": true
   }
 }

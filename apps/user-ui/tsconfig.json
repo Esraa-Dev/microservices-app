@@ -19,11 +19,12 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@ecommerce/kafka": ["../../packages/utils/kafka/index.ts"]
     },
     "outDir": "dist",
-    "rootDir": "src",
-    "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo"
+    "rootDir": "../../",
+        "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo"
   },
   "include": [
     "src/**/*.ts",
@@ -32,6 +33,7 @@
     "src/**/*.jsx",
     "../../apps/user-ui/.next/types/**/*.ts",
     "../../dist/apps/user-ui/.next/types/**/*.ts",
+    "../../packages/utils/kafka/**/*.ts",
     "index.d.ts",
     "next-env.d.ts"
   ],

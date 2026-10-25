@@ -1,4 +1,5 @@
 
+import { sendKafkaEvent } from '@/actions/track-user';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
@@ -59,11 +60,11 @@ type Store = {
 
 export const useStore = create<Store>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       cart: [],
       wishlist: [],
 
-      addToCart: (product, user, location, deviceInfo, quantity = 1) =>
+      addToCart: (product, user, location, deviceInfo, quantity = 1) => {
         set((state) => {
           const existingProduct = state.cart.find(
             (item) => item.id === product.id,
@@ -94,9 +95,27 @@ export const useStore = create<Store>()(
               },
             ],
           };
-        }),
+        });
 
-      removeFromCart: (id, user, location, deviceInfo) =>
+        // Send Kafka Event
+        if (user?.id && location && deviceInfo) {
+          void sendKafkaEvent({
+            userId: user.id,
+            productId: product.id,
+            action: 'add_to_cart',
+            shopId: product.shopId,
+            country: location.country || 'Unknown',
+            city: location.city || 'Unknown',
+            device: deviceInfo || 'Unknown Device',
+          });
+        }
+      },
+
+      removeFromCart: (id, user, location, deviceInfo) => {
+        const removeProduct = get().cart.find((item) => item.id === id);
+
+        if (!removeProduct) return;
+
         set((state) => {
           const existingProduct = state.cart.find(
             (item) => item.id === id,
@@ -120,30 +139,76 @@ export const useStore = create<Store>()(
           return {
             cart: state.cart.filter((item) => item.id !== id),
           };
-        }),
+        });
+
+        // Send Kafka Event
+        if (user?.id && location && deviceInfo) {
+          void sendKafkaEvent({
+            userId: user.id,
+            productId: removeProduct.id,
+            action: 'remove_from_cart',
+            shopId: removeProduct.shopId,
+            country: location.country || 'Unknown',
+            city: location.city || 'Unknown',
+            device: deviceInfo || 'Unknown Device',
+          });
+        }
+      },
 
       deleteFromCart: (id) =>
         set((state) => ({
           cart: state.cart.filter((item) => item.id !== id),
         })),
 
-      addToWishlist: (product, user, location, deviceInfo) =>
-        set((state) => {
-          const existingProduct = state.wishlist.find(
-            (item) => item.id === product.id,
-          );
+      addToWishlist: (product, user, location, deviceInfo) => {
+        const alreadyExists = get().wishlist.some(
+          (item) => item.id === product.id,
+        );
 
-          if (existingProduct) return state;
+        if (alreadyExists) return;
 
-          return {
-            wishlist: [...state.wishlist, product],
-          };
-        }),
+        set((state) => ({
+          wishlist: [...state.wishlist, product],
+        }));
 
-      removeFromWishlist: (id, user, location, deviceInfo) =>
+        // Send Kafka Event
+        if (user?.id && location && deviceInfo) {
+          void sendKafkaEvent({
+            userId: user.id,
+            productId: product.id,
+            action: 'add_to_wishlist',
+            shopId: product.shopId,
+            country: location.country || 'Unknown',
+            city: location.city || 'Unknown',
+            device: deviceInfo || 'Unknown Device',
+          });
+        }
+      },
+
+      removeFromWishlist: (id, user, location, deviceInfo) => {
+        const removeProduct = get().wishlist.find(
+          (item) => item.id === id,
+        );
+
+        if (!removeProduct) return;
+
         set((state) => ({
           wishlist: state.wishlist.filter((item) => item.id !== id),
-        })),
+        }));
+
+        // Send Kafka Event
+        if (user?.id && location && deviceInfo) {
+          void sendKafkaEvent({
+            userId: user.id,
+            productId: removeProduct.id,
+            action: 'remove_from_wishlist',
+            shopId: removeProduct.shopId,
+            country: location.country || 'Unknown',
+            city: location.city || 'Unknown',
+            device: deviceInfo || 'Unknown Device',
+          });
+        }
+      },
     }),
     {
       name: 'store-storage',
