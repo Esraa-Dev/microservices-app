@@ -98,7 +98,7 @@ const ProductCard = ({ product, isEvent = false }: ProductCardProps) => {
     <div className="group flex h-full min-w-0 flex-col overflow-hidden rounded-xl border border-border bg-background transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
       <div className="relative aspect-square w-full overflow-hidden bg-surface">
         <Link
-          href={`/products/${product.slug}`}
+          href={`/product/${product.slug}`}
           aria-label={`View ${product.title}`}
           className="absolute inset-0"
         >
@@ -200,7 +200,7 @@ const ProductCard = ({ product, isEvent = false }: ProductCardProps) => {
           </Link>
         )}
 
-        <Link href={`/products/${product.slug}`}>
+        <Link href={`/product/${product.slug}`}>
           <h3 className="line-clamp-2 min-h-11 text-sm font-semibold leading-6 text-primary-text transition-colors hover:text-primary sm:text-base">
             {product.title}
           </h3>

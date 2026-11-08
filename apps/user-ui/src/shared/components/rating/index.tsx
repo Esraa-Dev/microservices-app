@@ -1,48 +1,43 @@
+import React from 'react';
+import { Star } from 'lucide-react';
 
-import { Star } from "lucide-react";
-
-type RatingProps = {
-  rating: number;
-};
-
-const Rating = ({ rating }: RatingProps) => {
-  const safeRating = Math.min(5, Math.max(0, rating));
-
+const Rating = ({ rating }:any) => {
   return (
-    <div
-      className="flex items-center gap-1"
-      role="img"
-      aria-label={`Rated ${safeRating} out of 5`}
-    >
-      {Array.from({ length: 5 }, (_, index) => {
-        const fillPercentage = Math.min(
-          100,
-          Math.max(0, (safeRating - index) * 100)
-        );
+    <div className="flex items-center gap-3 dir-rtl">
+      <span className="text-2xl font-bold text-gray-900">{rating.toFixed(1)}</span>
 
-        return (
-          <div key={index} className="relative h-4 w-4">
-            <Star
-              size={16}
-              className="absolute inset-0 text-border"
-            />
+      <div className="flex gap-0.5 text-primary">
+        {[...Array(5)].map((_, index) => {
+          const starNumber = index + 1;
+          
+          if (starNumber <= rating) {
+            return <Star key={index} size={20} fill="currentColor" className="text-primary" />;
+          }
+          
+          if (starNumber - 1 < rating && starNumber > rating) {
+            const fillPercentage = (rating % 1) * 100;
+            const gradientId = `star-grad-${fillPercentage}`;
 
-            <div
-              className="absolute inset-0 overflow-hidden"
-              style={{ width: `${fillPercentage}%` }}
-            >
-              <Star
-                size={16}
-                className="max-w-none fill-primary text-primary"
-              />
-            </div>
-          </div>
-        );
-      })}
+            return (
+              <svg key={index} width="20" height="20" viewBox="0 0 24 24" className="text-primary">
+                <defs>
+                  <linearGradient id={gradientId}>
+                    <stop offset={`${fillPercentage}%`} stopColor="currentColor" />
+                    <stop offset={`${fillPercentage}%`} stopColor="#E5E7EB" />
+                  </linearGradient>
+                </defs>
+                <path
+                  d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                  fill={`url(#${gradientId})`}
+                />
+              </svg>
+            );
+          }
 
-      <span className="ml-1 text-sm font-medium text-primary-text">
-        {safeRating.toFixed(1)}
-      </span>
+          return <Star key={index} size={20} fill="#E5E7EB" className="text-gray-200" />;
+        })}
+      </div>
+
     </div>
   );
 };

@@ -1,4 +1,6 @@
+
 import prisma from '@ecommerce/prisma';
+import { Prisma } from '@prisma/client';
 
 export const updateUserAnalytics = async (event: any) => {
   try {
@@ -8,9 +10,19 @@ export const updateUserAnalytics = async (event: any) => {
       },
     });
 
-    let updatedActions: any[] = existingData?.actions ?? [];
+    let updatedActions: Prisma.JsonArray = Array.isArray(existingData?.actions)
+      ? existingData.actions
+      : [];
 
-    const actionExisted = updatedActions.some((entry: any) => {
+    const actionExisted = updatedActions.some((entry) => {
+      if (
+        typeof entry !== 'object' ||
+        entry === null ||
+        Array.isArray(entry)
+      ) {
+        return false;
+      }
+
       return (
         entry.productId === event.productId &&
         entry.action === event.action
@@ -20,8 +32,8 @@ export const updateUserAnalytics = async (event: any) => {
     if (event.action === 'product_view') {
       updatedActions.push({
         productId: event.productId,
-        timestamp: new Date(),
-        shopId: event.shopId,
+        timestamp: new Date().toISOString(),
+        shopId: event.shopId ?? null,
         action: 'product_view',
       });
     } else if (
@@ -30,8 +42,8 @@ export const updateUserAnalytics = async (event: any) => {
     ) {
       updatedActions.push({
         productId: event.productId,
-        timestamp: new Date(),
-        shopId: event.shopId,
+        timestamp: new Date().toISOString(),
+        shopId: event.shopId ?? null,
         action: event.action,
       });
     } else if (
@@ -43,7 +55,15 @@ export const updateUserAnalytics = async (event: any) => {
           ? 'add_to_cart'
           : 'add_to_wishlist';
 
-      updatedActions = updatedActions.filter((entry: any) => {
+      updatedActions = updatedActions.filter((entry) => {
+        if (
+          typeof entry !== 'object' ||
+          entry === null ||
+          Array.isArray(entry)
+        ) {
+          return true;
+        }
+
         return !(
           entry.productId === event.productId &&
           entry.action === actionToRemove
@@ -98,7 +118,7 @@ export const updateProductAnalytics = async (event: any) => {
         break;
 
       case 'purchase':
-        updateFields.purchases  = { increment: 1 };
+        updateFields.purchases = { increment: 1 };
         break;
 
       case 'add_to_wishlist':
@@ -113,21 +133,24 @@ export const updateProductAnalytics = async (event: any) => {
         return;
     }
 
+    const now = new Date();
+
     await prisma.productAnalytics.upsert({
       where: {
         productId: event.productId,
       },
-      update: {        lastViewedAt:new Date(),
-...updateFields},
+      update: {
+        lastViewedAt: now,
+        ...updateFields,
+      },
       create: {
         productId: event.productId,
-                shopId: event.shopId||null,
-
+        shopId: event.shopId ?? null,
         views: event.action === 'product_view' ? 1 : 0,
         cartAdds: event.action === 'add_to_cart' ? 1 : 0,
-        purchases : event.action === 'purchase' ? 1 : 0,
+        purchases: event.action === 'purchase' ? 1 : 0,
         wishlistAdds: event.action === 'add_to_wishlist' ? 1 : 0,
-        lastViewedAt:new Date()
+        lastViewedAt: now,
       },
     });
   } catch (error) {

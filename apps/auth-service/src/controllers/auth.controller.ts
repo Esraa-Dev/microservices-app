@@ -40,7 +40,6 @@ export const register = async (
       message: 'OTP sent successfully. Please verify your account',
     });
   } catch (error) {
-    console.error('REGISTER ERROR:', error);
     return next(error);
   }
 };
@@ -162,7 +161,6 @@ export const resetUserPassword = async (
 ) => {
   try {
     const { email, newPassword } = req.body;
-    console.log('Reset Password Request:', { email, newPassword });
     if (!email || !newPassword) {
       return next(new ValidationError('Email and new password are required!'));
     }
@@ -464,7 +462,6 @@ export const verifySeller = async (
       seller,
     });
   } catch (error) {
-    console.error('VERIFY SELLER ERROR:', error);
     return next(error);
   }
 };
@@ -576,7 +573,7 @@ export const createConnectStripeLink = async (
           id: sellerId,
         },
         data: {
-            stripeId: accountId,
+          stripeId: accountId,
         },
       });
     }
@@ -593,11 +590,9 @@ export const createConnectStripeLink = async (
       url: accountLink.url,
     });
   } catch (error) {
-    console.error('CREATE CONNECT STRIPE LINK ERROR:', error);
     return next(error);
   }
 };
-
 
 export const sellerForgotPassword = async (
   req: Request,
@@ -620,9 +615,7 @@ export const resetSellerPassword = async (
     const { email, newPassword } = req.body;
 
     if (!email || !newPassword) {
-      return next(
-        new ValidationError('Email and new password are required!'),
-      );
+      return next(new ValidationError('Email and new password are required!'));
     }
 
     const seller = await prisma.seller.findUnique({
@@ -633,10 +626,7 @@ export const resetSellerPassword = async (
       return next(new ValidationError('Seller not found!'));
     }
 
-    const isSamePassword = await bcrypt.compare(
-      newPassword,
-      seller.password,
-    );
+    const isSamePassword = await bcrypt.compare(newPassword, seller.password);
 
     if (isSamePassword) {
       return next(
@@ -664,7 +654,6 @@ export const resetSellerPassword = async (
   }
 };
 
-
 export const getSeller = (req: Request, res: Response, next: NextFunction) => {
   try {
     const seller = req.seller;
@@ -674,6 +663,194 @@ export const getSeller = (req: Request, res: Response, next: NextFunction) => {
       seller,
     });
   } catch (error) {
+    return next(error);
+  }
+};
+
+export const userLogout = (_req: Request, res: Response, next: NextFunction) => {
+  try {
+    res.clearCookie('access_token');
+    res.clearCookie('refresh_token');
+    return res.status(200).json({
+      success:true,
+      message:"Logged Out Successfully"
+    })
+  } catch (error) {
+    return next(error);
+  }
+};
+
+
+export const updateUserPassword = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return next(new ValidationError('User not found'));
+    }
+
+    const { currentPassword, newPassword, confirmPassword } = req.body;
+
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      return next(new ValidationError('All fields are required'));
+    }
+
+    if (newPassword !== confirmPassword) {
+      return next(new ValidationError('New passwords do not match'));
+    }
+
+    if (currentPassword === newPassword) {
+      return next(
+        new ValidationError(
+          'New password cannot be the same as the current password',
+        ),
+      );
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user || !user.password) {
+      return next(new AuthError('User not found or password is unavailable'));
+    }
+
+    const isPasswordValid = await bcrypt.compare(
+      currentPassword,
+      user.password,
+    );
+
+    if (!isPasswordValid) {
+      return next(new ValidationError('Current password is incorrect'));
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        password: hashedPassword,
+      },
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Password updated successfully',
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+
+export const addUserAddress = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      return next(new ValidationError('User not found'));
+    }
+    const { label, street, zip, city, country, isDefault } = req.body;
+    if (!label || !street || !zip || !city || !country) {
+      return next(new ValidationError('All fields are required'));
+    }
+    if (isDefault) {
+      await prisma.address.updateMany({
+        where: {
+          userId,
+          isDefault: true,
+        },
+        data: {
+          isDefault: false,
+        },
+      });
+    }
+    const newAddress = await prisma.address.create({
+      data: {
+        userId,
+        label,
+        street,
+        zip,
+        city,
+        country,
+        isDefault,
+      },
+    });
+    res.status(201).json({
+      success: true,
+      message: 'Address added successfully',
+      address: newAddress,
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const getUserAddresses = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      return next(new ValidationError('User not found'));
+    }
+    const addresses = await prisma.address.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+    });
+    res.status(200).json({
+      success: true,
+      addresses,
+    });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+export const deleteUserAddress = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      return next(new ValidationError('User not found'));
+    }
+    const { addressId } = req.params;
+    if (!addressId) {
+      return next(new ValidationError('Address ID is required'));
+    }
+     if (typeof addressId !== 'string') {
+      return next(new ValidationError('Valid Address ID is required'));
+    }
+    const address = await prisma.address.findUnique({
+      where: { id: addressId },
+    });
+    if (!address || address.userId !== userId) {
+      return next(new ValidationError('Address not found or does not belong to the user'));
+    }
+
+    await prisma.address.delete({
+      where: { id: addressId },
+    });
+
+
+    res.status(200).json({
+      success: true,
+      message: 'Address deleted successfully',
+    });
+  }
+  catch (error) {
     return next(error);
   }
 };

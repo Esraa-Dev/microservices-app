@@ -11,6 +11,13 @@ import {
   deleteProduct,
   restoreProduct,
   getAllProducts,
+  getProductDetails,
+  searchProducts,
+  getFilteredProducts,
+  getFilteredEvents,
+  getFilteredShops,
+  topShops,
+  getAllEvents
 } from "../controllers/product.controller";
 import { isAuthenticated } from '@ecommerce/middleware';
 
@@ -27,4 +34,15 @@ router.get("/get-shop-products", isAuthenticated, getShopProducts);
 router.delete("/delete-product/:productId", isAuthenticated, deleteProduct);
 router.put("/restore-product/:productId", isAuthenticated, restoreProduct);
 router.get("/get-all-products", getAllProducts);
+router.get("/get-all-events", getAllEvents);
+
+router.get("/get-product/:slug", getProductDetails);
+
+router.get("/get-filtered-products", getFilteredProducts);
+router.get("/get-filtered-shops", getFilteredShops);
+router.get("/get-filtered-offers", getFilteredEvents);
+router.get("/search-products", searchProducts);
+router.get("/top-shops", topShops);
+
+
 export default router;

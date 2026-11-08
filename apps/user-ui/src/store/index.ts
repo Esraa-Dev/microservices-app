@@ -1,4 +1,3 @@
-
 import { sendKafkaEvent } from '@/actions/track-user';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
@@ -20,6 +19,8 @@ export type Product = {
   sizes: string[];
   shopId: string;
   quantity?: number;
+  selectedColor?: string;
+  selectedSize?: string;
 };
 
 type Store = {
@@ -91,7 +92,7 @@ export const useStore = create<Store>()(
               ...state.cart,
               {
                 ...product,
-                quantity: Math.min(product.stock, quantity),
+                quantity: Math.min(product.stock, product.quantity ?? quantity),
               },
             ],
           };
@@ -117,9 +118,7 @@ export const useStore = create<Store>()(
         if (!removeProduct) return;
 
         set((state) => {
-          const existingProduct = state.cart.find(
-            (item) => item.id === id,
-          );
+          const existingProduct = state.cart.find((item) => item.id === id);
 
           if (!existingProduct) return state;
 
@@ -186,9 +185,7 @@ export const useStore = create<Store>()(
       },
 
       removeFromWishlist: (id, user, location, deviceInfo) => {
-        const removeProduct = get().wishlist.find(
-          (item) => item.id === id,
-        );
+        const removeProduct = get().wishlist.find((item) => item.id === id);
 
         if (!removeProduct) return;
 
