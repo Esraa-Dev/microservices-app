@@ -1,7 +1,6 @@
-
 'use client';
 
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import {
@@ -17,6 +16,7 @@ import {
   CreditCard,
   Truck,
   ShieldCheck,
+  Loader2,
 } from 'lucide-react';
 
 import { useStore } from '@/store';
@@ -25,13 +25,17 @@ import useLocationTracking from '@/hooks/useLocationTracking';
 import useDeviceTracking from '@/hooks/useDeviceTracking';
 import { useQuery } from '@tanstack/react-query';
 import authAxiosInstance from '@/utils/authAxiosInstance';
+import axiosInstance from '@/utils/axiosInstance';
+import toast from 'react-hot-toast';
+import { useRouter } from 'next/navigation';
 
 const CartPage = () => {
   const cart = useStore((state) => state.cart);
   const addToCart = useStore((state) => state.addToCart);
   const removeFromCart = useStore((state) => state.removeFromCart);
   const deleteFromCart = useStore((state) => state.deleteFromCart);
-
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
   const { user } = useUser();
   const location = useLocationTracking();
   const deviceInfo = useDeviceTracking();
@@ -44,12 +48,27 @@ const CartPage = () => {
   const discountAmount = 0;
 
   const subtotal = cart.reduce((acc, product) => {
-    return (
-      acc +
-      product.sale_price * (product.quantity ?? 1)
-    );
+    return acc + product.sale_price * (product.quantity ?? 1);
   }, 0);
-
+  const createPaymentSession = async () => {
+    setLoading(true);
+    try {
+      const res = await axiosInstance.post(
+        '/order/api/create-payment-session',
+        {
+          cart,
+          shippingAddressId: selectedAddressId,
+          coupon: couponCode,
+        },
+      );
+      const sessionId = res.data.sessionId;
+      router.push(`/checkout?sessionId=${sessionId}`);
+    } catch (error) {
+      toast.error('Something went wrong. Please try again');
+    } finally {
+      setLoading(false);
+    }
+  };
   const totalQuantity = cart.reduce((acc, product) => {
     return acc + (product.quantity ?? 1);
   }, 0);
@@ -81,28 +100,26 @@ const CartPage = () => {
   };
 
   const {
-  data: addresses = [],
-  isLoading,
-  isError,
-} = useQuery({
-  queryKey: ["user-addresses"],
-  queryFn: async () => {
-    const response = await authAxiosInstance.get("/get-addresses");
-    return response.data.addresses;
-  },
-});
-  
-useEffect(() => {
-  if (addresses.length > 0 && !selectedAddressId) {
-    const defaultAddress = addresses.find(
-      (address:any) => address.isDefault
-    );
+    data: addresses = [],
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ['user-addresses'],
+    queryFn: async () => {
+      const response = await authAxiosInstance.get('/get-addresses');
+      return response.data.addresses;
+    },
+  });
 
-    setSelectedAddressId(
-      defaultAddress?.id
-    );
-  }
-}, [addresses, selectedAddressId]);
+  useEffect(() => {
+    if (addresses.length > 0 && !selectedAddressId) {
+      const defaultAddress = addresses.find(
+        (address: any) => address.isDefault,
+      );
+
+      setSelectedAddressId(defaultAddress?.id);
+    }
+  }, [addresses, selectedAddressId]);
 
   return (
     <main className="min-h-screen bg-background">
@@ -201,22 +218,22 @@ useEffect(() => {
                               {product.title}
                             </Link>
 
-                        <div className="mt-3">
-  <p className="mb-2 text-sm font-medium text-primary-text">
-    Colors
-  </p>
+                            <div className="mt-3">
+                              <p className="mb-2 text-sm font-medium text-primary-text">
+                                Colors
+                              </p>
 
-  <div className="flex items-center gap-2">
-    {product.colors?.map((color, colorIndex) => (
-      <div
-        key={`${color}-${colorIndex}`}
-        title={color}
-        style={{ backgroundColor: color }}
-        className="size-6 shrink-0 rounded-full border border-black/10 shadow-sm ring-1 ring-black/5 transition-transform duration-200 hover:scale-110"
-      />
-    ))}
-  </div>
-</div>
+                              <div className="flex items-center gap-2">
+                                {product.colors?.map((color, colorIndex) => (
+                                  <div
+                                    key={`${color}-${colorIndex}`}
+                                    title={color}
+                                    style={{ backgroundColor: color }}
+                                    className="size-6 shrink-0 rounded-full border border-black/10 shadow-sm ring-1 ring-black/5 transition-transform duration-200 hover:scale-110"
+                                  />
+                                ))}
+                              </div>
+                            </div>
 
                             {product.sizes?.map((size, sizeIndex) => (
                               <p
@@ -229,9 +246,7 @@ useEffect(() => {
 
                             <p
                               className={`mt-2 text-xs font-medium ${
-                                outOfStock
-                                  ? 'text-red-500'
-                                  : 'text-emerald-600'
+                                outOfStock ? 'text-red-500' : 'text-emerald-600'
                               }`}
                             >
                               {outOfStock ? 'Out of stock' : 'In stock'}
@@ -247,7 +262,8 @@ useEffect(() => {
                                 </p>
                               )}
                               <p className="mt-1 text-xs text-secondary-text">
-                                Item total: ${(product.sale_price * quantity).toFixed(2)}
+                                Item total: $
+                                {(product.sale_price * quantity).toFixed(2)}
                               </p>
                             </div>
                           </div>
@@ -408,34 +424,36 @@ useEffect(() => {
                   </label>
 
                   <select
-  id="shipping-address"
-  value={selectedAddressId}
-  onChange={(e) => setSelectedAddressId(e.target.value)}
-  disabled={isLoading || addresses.length === 0}
-  className="h-11 w-full cursor-pointer rounded-lg border border-border bg-white px-3 text-sm text-primary-text outline-none focus:border-primary"
->
-  <option value="">
-    {isLoading ? "Loading addresses..." : "Select shipping address"}
-  </option>
+                    id="shipping-address"
+                    value={selectedAddressId}
+                    onChange={(e) => setSelectedAddressId(e.target.value)}
+                    disabled={isLoading || addresses.length === 0}
+                    className="h-11 w-full cursor-pointer rounded-lg border border-border bg-white px-3 text-sm text-primary-text outline-none focus:border-primary"
+                  >
+                    <option value="">
+                      {isLoading
+                        ? 'Loading addresses...'
+                        : 'Select shipping address'}
+                    </option>
 
-  {addresses.map((address:any) => (
-    <option key={address.id} value={address.id}>
-      {address.street}, {address.city}, {address.country}
-    </option>
-  ))}
-</select>
+                    {addresses.map((address: any) => (
+                      <option key={address.id} value={address.id}>
+                        {address.street}, {address.city}, {address.country}
+                      </option>
+                    ))}
+                  </select>
 
-{isError && (
-  <p className="mt-2 text-xs text-red-500">
-    Failed to load addresses.
-  </p>
-)}
+                  {isError && (
+                    <p className="mt-2 text-xs text-red-500">
+                      Failed to load addresses.
+                    </p>
+                  )}
 
-{!isLoading && addresses.length === 0 && (
-  <p className="mt-2 text-xs text-muted-text">
-    No saved addresses. Please add an address first.
-  </p>
-)}
+                  {!isLoading && addresses.length === 0 && (
+                    <p className="mt-2 text-xs text-muted-text">
+                      No saved addresses. Please add an address first.
+                    </p>
+                  )}
 
                   <p className="mt-2 text-xs text-muted-text">
                     Your saved addresses will appear here.
@@ -479,11 +497,15 @@ useEffect(() => {
 
                 <button
                   type="button"
-                  disabled
-                  className="flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-white opacity-50"
+                  onClick={createPaymentSession}
+                  disabled={loading || !selectedAddressId}
+                  className="flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-white transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  Proceed to Checkout
-                  <ArrowRight size={17} />
+                  {loading && <Loader2 className="animate-spin w-5 h-5" />}
+                  <span>
+                    {loading ? 'Redirecting...' : 'Proceed to Checkout'}
+                  </span>
+                  {!loading && <ArrowRight size={17} />}
                 </button>
 
                 <p className="mt-2 text-center text-xs text-muted-text">

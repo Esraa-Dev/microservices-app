@@ -8,7 +8,8 @@
     "auth": "npx nx run-many --target=dev --all --projects=auth-service",
     "user-ui": "npx nx run-many --target=dev --all --projects=user-ui",
     "seller-ui": "npx nx run-many --target=dev --all --projects=seller-ui",
-    "product-service": "npx nx run-many --target=dev --all --projects=product-service"
+    "product-service": "npx nx run-many --target=dev --all --projects=product-service",
+    "order-service": "npx nx serve order-service"
   },
   "private": true,
   "devDependencies": {
@@ -30,6 +31,7 @@
     "@swc/core": "~1.15.5",
     "@swc/helpers": "~0.5.18",
     "@types/bcrypt": "^6.0.0",
+    "@types/canvas-confetti": "^1.9.0",
     "@types/cookie-parser": "^1.4.10",
     "@types/cors": "^2.8.19",
     "@types/ejs": "^3.1.5",
@@ -76,12 +78,15 @@
     "@hookform/resolvers": "^5.9.1",
     "@imagekit/nodejs": "^7.12.1",
     "@prisma/client": "6.19",
+    "@stripe/react-stripe-js": "^7.0.1",
+    "@stripe/stripe-js": "^10.2.1",
     "@tailwindcss/postcss": "^4.3.3",
     "@tanstack/react-query": "^5.102.8",
     "@tanstack/react-table": "^9.2.4",
     "@upstash/redis": "^1.38.2",
     "axios": "^1.19.0",
     "bcrypt": "^6.0.0",
+    "canvas-confetti": "^1.9.4",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
